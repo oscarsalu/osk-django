@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="/article/all">Articles</a></li>
+	<li><a href="/article/create">Add Article</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<h2>Language is: {{language}}</h2>
+<h2>Session Language is: {{session_language}}</h2>
+<h1>Articles</h1>
+{% for article in articles %}
+<div>
+	<h2><a href="/article/get/{{article.id}}">{{ article.title}} </a></h2>
+	<p>{{ article.body }}</p>
+</div>
+{% endfor %}
+
+{% endblock %}
