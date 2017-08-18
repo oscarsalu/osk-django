@@ -1,6 +1,9 @@
 from django.conf.urls import include, url
+from api import ArticleResource
 from django.contrib import admin
 from . import views
+
+article_resource = ArticleResource()
 
 urlpatterns = [
     url(r'^all/$', views.articles),
@@ -11,4 +14,5 @@ urlpatterns = [
     url(r'^like/(?P<article_id>\d+)/$', views.like_article),
     url(r'^add_comment/(?P<article_id>\d+)/$', views.add_comment),
     url(r'^search/$', views.search_titles),
+    url(r'^api/', include(article_resource.urls)),
 ]
