@@ -5,6 +5,13 @@
 	<li><a href="/article/all">Articles</a></li>
 	<li><a href="/article/create">Add Article</a></li>
 </ul>
+<h3>Search</h3>
+{% csrf_token %}
+<input type="text" id="search" class="form-control" name="search">
+
+<ul id="search-result">
+	
+</ul>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +21,8 @@
 {% for article in articles %}
 <div>
 	<h2><a href="/article/get/{{article.id}}">{{ article.title}} </a></h2>
-	<p>{{ article.body }}</p>
+	<p>{{ article.body|lower|truncatewords:'10' }}</p>
+	<p>{{article.likes}} People liked this article</p>
 </div>
 {% endfor %}
 

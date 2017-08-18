@@ -7,10 +7,11 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from django.template import Context 
 from django.views.generic.base import TemplateView
-from article.models import Article
-from forms import ArticleForm
+from article.models import Article, Comment
+from forms import ArticleForm, CommentForm
 from django.http import HttpResponseRedirect
 from django.template.context_processors import csrf
+from django.utils import timezone
 # Create your views here.
 
 # def hello(request):
@@ -39,8 +40,14 @@ def articles(request):
 	if 'lang' in request.session:
 		session_language = request.session['lang']
 
-	context = {'articles': Article.objects.all(), 'language' : language , 'session_language' : session_language}
-	return render_to_response('articles.html', context)
+	a = {}
+	a.update(csrf(request))
+
+	a['articles'] =Article.objects.all()
+	a['language'] = language
+	a['session_language'] = session_language
+
+	return render_to_response('articles.html', a)
 
 def article(request, article_id = 1):
 	context = {'article': Article.objects.get(id=article_id)}
@@ -56,9 +63,11 @@ def language(request, language='en-us'):
 #first check if the request is a POST request
 def create(request):
 	if request.POST:
-		form = ArticleForm(request.POST)
+		form = ArticleForm(request.POST, request.FILES)
 		if form.is_valid():
-			form.save()
+			c = form.save(commit=False)
+			c.pub_date = timezone.now()
+			c.save()
 
 			return HttpResponseRedirect('/article/all')
 	else:
@@ -70,3 +79,46 @@ def create(request):
 	a['form'] = form
 
 	return render_to_response('create_article.html' ,a)
+
+def like_article(request, article_id):
+	if article_id:
+		a= Article.objects.get(id = article_id)
+		count = a.likes
+		count += 1
+		a.likes = count
+		a.save()
+
+	return HttpResponseRedirect('/article/get/%s' % article_id)
+
+def add_comment(request, article_id):
+	a = Article.objects.get(id=article_id)
+
+	if request.method == "POST":
+		f = CommentForm(request.POST)
+		if f.is_valid():
+			c = f.save(commit=False)
+			c.pub_date = timezone.now()
+			c.article = a
+			c.save()
+
+			return HttpResponseRedirect('/article/get/%s' % article_id)
+	else:
+		f = CommentForm()
+
+	b = {}
+	b.update(csrf(request))
+
+	b['article'] = a
+	b['form'] = f
+
+	return render_to_response('add_comment.html', b)
+	
+def search_titles(request):
+	if request.method == "POST":
+		search_text = request.POST['search_text']
+	else:
+		search_text = ''
+	
+	articles = Article.objects.filter(title__contains=search_text)
+
+	return render_to_response('ajax_search.html',{'articles': articles})

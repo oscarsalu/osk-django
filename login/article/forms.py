@@ -1,8 +1,15 @@
 from django.forms import ModelForm
-from article.models import Article
+from article.models import Article, Comment
 
 class ArticleForm(ModelForm):
 	
 	class Meta:
 		model = Article
-		fields = ('title','body','pub_date')
+		fields = ('title','body','thumbnail')
+
+class CommentForm(ModelForm):
+
+	class Meta:
+		model = Comment
+		fields = ('name', 'body')
+	
